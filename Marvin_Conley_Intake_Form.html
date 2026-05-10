@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>Marvin Conley — AI Avatar Intake | TikTok Shop Creator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0D0D0D;
+    --surface: #111111;
+    --surface-mid: #181818;
+    --surface-hi: #202020;
+    --orange: #FF4500;
+    --orange-bright: #FF6030;
+    --orange-dim: rgba(255,69,0,0.12);
+    --white: #FFFFFF;
+    --text: #E8E8E8;
+    --text-muted: rgba(232,232,232,0.45);
+    --border: rgba(255,255,255,0.08);
+    --border-orange: rgba(255,69,0,0.3);
+    --input-bg: rgba(255,255,255,0.04);
+    --input-focus: rgba(255,69,0,0.06);
+    --error: #e07070;
+    --radius: 3px;
+    --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-rail {
+    position: fixed;
+    top: env(safe-area-inset-top, 0);
+    left: 0; right: 0;
+    height: 5px;
+    background: rgba(255,255,255,0.05);
+    z-index: 100;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--orange);
+    transition: width 0.45s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+  .progress-pct {
+    position: fixed;
+    top: calc(12px + env(safe-area-inset-top, 0px));
+    right: max(16px, env(safe-area-inset-right, 16px));
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--orange);
+    z-index: 101;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 24px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 4px;
+    background: var(--orange);
+  }
+  .creator-badge {
+    display: inline-block;
+    background: var(--orange);
+    color: var(--white);
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: clamp(30px, 6vw, 52px);
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--white);
+    line-height: 1.05;
+    margin-bottom: 8px;
+  }
+  header h1 span { color: var(--orange); }
+  header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .header-grid {
+    position: absolute;
+    top: 0; right: 0;
+    width: 200px; height: 100%;
+    background-image: repeating-linear-gradient(
+      0deg, transparent, transparent 30px, rgba(255,69,0,0.03) 30px, rgba(255,69,0,0.03) 31px
+    ),
+    repeating-linear-gradient(
+      90deg, transparent, transparent 30px, rgba(255,69,0,0.03) 30px, rgba(255,69,0,0.03) 31px
+    );
+    pointer-events: none;
+  }
+
+  /* ── STEP INDICATOR ── */
+  .step-strip {
+    background: var(--surface-mid);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+  }
+  .step-pill {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--surface-hi);
+    transition: var(--transition);
+    flex: 1;
+    min-width: 24px;
+  }
+  .step-pill.active { background: var(--orange); }
+  .step-pill.done { background: rgba(255,69,0,0.35); }
+  .step-count {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--orange);
+    white-space: nowrap;
+    margin-left: 8px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── SECTIONS ── */
+  .form-section { display: none; animation: slideIn 0.35s cubic-bezier(0.4,0,0.2,1) both; }
+  .form-section.active { display: block; }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .section-header { padding: 40px 0 24px; }
+  .section-tag {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 10px;
+  }
+  .section-title {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: clamp(24px, 4.5vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .section-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 560px;
+  }
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 0 28px;
+  }
+
+  /* ── QUESTIONS ── */
+  .q-group { margin-bottom: 24px; }
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  label span.q-num {
+    color: var(--orange);
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    margin-right: 8px;
+    text-transform: uppercase;
+  }
+  label .hint {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+
+  input[type="text"],
+  textarea,
+  select {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    /* 16px minimum prevents iOS Safari auto-zoom on focus */
+    font-size: 16px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    outline: none;
+    transition: var(--transition);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="text"]:focus,
+  textarea:focus {
+    border-color: var(--orange);
+    background: var(--input-focus);
+    box-shadow: 0 0 0 3px rgba(255,69,0,0.08);
+  }
+  textarea { resize: vertical; min-height: 88px; }
+  input::placeholder, textarea::placeholder { color: rgba(232,232,232,0.2); }
+
+  /* Checkboxes */
+  .checkbox-group { display: flex; flex-direction: column; gap: 10px; }
+  .checkbox-item { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+  .checkbox-item input[type="checkbox"] { display: none; }
+  .checkbox-item .box {
+    width: 18px; height: 18px; min-width: 18px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition);
+    background: var(--input-bg);
+  }
+  .checkbox-item input:checked + .box {
+    background: var(--orange);
+    border-color: var(--orange);
+  }
+  .checkbox-item input:checked + .box::after {
+    content: '';
+    width: 5px; height: 9px;
+    border: 2px solid var(--white);
+    border-top: none; border-left: none;
+    transform: rotate(45deg) translateY(-1px);
+    display: block;
+  }
+  .checkbox-item .cb-label { font-size: 14px; color: var(--text); line-height: 1.5; }
+
+  /* ── PHOTO GUIDE ── */
+  .photo-guide {
+    background: var(--surface-mid);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--orange);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-top: 32px;
+  }
+  .photo-guide h3 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .photo-guide > p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .photo-warning {
+    background: rgba(255,69,0,0.08);
+    border-left: 3px solid var(--orange);
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .photo-guide h4 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin: 18px 0 8px;
+  }
+  table.photo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.photo-table th {
+    text-align: left;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 8px 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  table.photo-table td {
+    padding: 9px 8px 9px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  table.photo-table td:first-child {
+    color: var(--orange);
+    font-weight: 700;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    min-width: 28px;
+  }
+  .photo-tips { margin-top: 12px; list-style: none; }
+  .photo-tips li {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    padding-left: 14px;
+    position: relative;
+    line-height: 1.5;
+    list-style: none;
+  }
+  .photo-tips li::before {
+    content: '→';
+    position: absolute; left: 0;
+    color: var(--orange);
+    font-size: 11px;
+  }
+
+  /* ── NAVIGATION ── */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 36px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+  }
+  .btn {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 15px 28px;
+    min-height: 48px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .btn-prev {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-prev:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+  .btn-next {
+    background: var(--orange);
+    color: var(--white);
+    margin-left: auto;
+  }
+  .btn-next:hover { background: var(--orange-bright); }
+  .btn-submit {
+    background: var(--orange);
+    color: var(--white);
+    margin-left: auto;
+    position: relative;
+    min-width: 160px;
+  }
+  .btn-submit:hover { background: var(--orange-bright); }
+  .btn-submit.loading { pointer-events: none; opacity: 0.7; }
+  .btn-submit.loading::after {
+    content: '';
+    position: absolute; right: 16px;
+    top: 50%; margin-top: -6px;
+    width: 13px; height: 13px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SUCCESS ── */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 72px 24px;
+    animation: slideIn 0.4s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  .success-screen.active { display: block; }
+  .success-icon {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--orange);
+    margin-bottom: 24px;
+    letter-spacing: -2px;
+  }
+  .success-screen h2 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+    color: var(--white);
+    margin-bottom: 14px;
+  }
+  .success-screen p {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 460px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── ERROR ── */
+  .submit-error {
+    display: none;
+    background: rgba(224,112,112,0.08);
+    border: 1px solid rgba(224,112,112,0.25);
+    color: #e07070;
+    font-size: 13px;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    margin-top: 14px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 540px) {
+    .nav-buttons {
+      flex-wrap: wrap;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    }
+    .btn-prev, .btn-next, .btn-submit {
+      width: 100%;
+      text-align: center;
+    }
+    .btn-next, .btn-submit { margin-left: 0; }
+    .btn { min-height: 52px; font-size: 14px; }
+    header h1 { font-size: 36px; }
+    .q-group { margin-bottom: 22px; }
+    textarea { min-height: 100px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-rail"><div class="progress-fill" id="progressFill"></div></div>
+<div class="progress-pct" id="progressPct">0%</div>
+
+<header>
+  <div class="header-accent"></div>
+  <div class="header-grid"></div>
+  <div class="creator-badge">TikTok Shop Creator</div>
+  <h1>Marvin <span>Conley</span></h1>
+  <p>AI Avatar Character Intake &nbsp;·&nbsp; Powered by Higgsfield AI</p>
+</header>
+
+<div class="step-strip" id="stepStrip"></div>
+
+<main>
+  <form id="intakeForm" novalidate>
+    <input type="hidden" name="_subject" value="Marvin Conley — AI Avatar Intake Form Submission">
+    <input type="hidden" name="_replyto" value="xavier.johnson.pharmd@gmail.com">
+    <input type="hidden" name="client_name" value="Marvin Conley">
+    <input type="hidden" name="client_type" value="TikTok Shop Creator">
+
+    <!-- ═══════════════════ SECTION 1 ═══════════════════ -->
+    <div class="form-section active" data-section="0">
+      <div class="section-header">
+        <div class="section-tag">Section 1 of 8 — Identity</div>
+        <h2 class="section-title">Who Are You On Camera?</h2>
+        <p class="section-desc">Your answers tell the AI exactly who you are — your energy, your brand, your vibe. Don't overthink it. Answer like you're texting a friend who's never seen your content.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label><span class="q-num">01</span>What is your creator name / on-screen name?
+          <span class="hint">Your TikTok handle or the name your audience knows you by.</span>
+        </label>
+        <input type="text" name="q1_creator_name" placeholder="@yourhandle or your creator name">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">02</span>If you had a creator persona title, what would it be?
+          <span class="hint">Examples: "The Deal Finder," "Your TikTok Shop Guy," "The Product Plug"</span>
+        </label>
+        <input type="text" name="q2_persona_title" placeholder="e.g. The Product Plug">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">03</span>What is your signature opener or catchphrase?
+          <span class="hint">The line that starts your best videos, or your most recognized phrase.</span>
+        </label>
+        <input type="text" name="q3_catchphrase" placeholder="Your go-to opening line...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">04</span>Describe your creator brand in one sentence:
+          <span class="hint">Example: "I find the products that actually work and make sure you know about them before they sell out."</span>
+        </label>
+        <textarea name="q4_brand_sentence" placeholder="Your brand in one sentence..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">05</span>What three words describe your energy on camera?</label>
+        <input type="text" name="q5_energy_words" placeholder="e.g. Hype, Real, Fast">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">06</span>What is the ONE feeling you want someone to have right after they buy through your link?</label>
+        <textarea name="q6_post_purchase_feeling" placeholder="The feeling that closes the loop for your buyer..."></textarea>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-next" onclick="goNext()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 2 ═══════════════════ -->
+    <div class="form-section" data-section="1">
+      <div class="section-header">
+        <div class="section-tag">Section 2 of 8 — Appearance</div>
+        <h2 class="section-title">Lock In Your Look</h2>
+        <p class="section-desc">This section is critical. The AI must lock in your exact features — they never change across any content we create. Be as specific as you can.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label><span class="q-num">07</span>Height and build in your own words:
+          <span class="hint">Example: "5'11", athletic, broad chest"</span>
+        </label>
+        <input type="text" name="q7_build" placeholder="Your height and how you'd describe your frame...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">08</span>How would you describe your skin tone?
+          <span class="hint">Be specific: deep brown, medium brown, light brown, etc.</span>
+        </label>
+        <input type="text" name="q8_skin_tone" placeholder="e.g. Medium brown, warm undertones">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">09</span>Eye color:</label>
+        <input type="text" name="q9_eye_color" placeholder="e.g. Dark brown">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">10</span>Hair — describe your natural texture, length, and how you typically wear it:
+          <span class="hint">⚠️ IMPORTANT: Your AI avatar will be locked to whatever hairstyle appears in your photos. ALL photos must show the SAME hairstyle. Fresh cut is usually best.</span>
+        </label>
+        <textarea name="q10_hair" placeholder="e.g. Tight coils, low cut with a taper fade, always fresh"></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">11</span>Facial hair — describe exactly what you have:
+          <span class="hint">Clean-shaven? Stubble? Beard? Goatee? How dense? Where exactly?</span>
+        </label>
+        <textarea name="q11_facial_hair" placeholder="Describe every detail of your facial hair..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">12</span>Do you wear glasses or any face accessories on camera?</label>
+        <input type="text" name="q12_glasses" placeholder="e.g. No glasses / Clear-framed glasses, thin">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">13</span>List any distinctive marks the AI must ALWAYS preserve:
+          <span class="hint">Moles, birthmarks, scars, anything uniquely yours.</span>
+        </label>
+        <textarea name="q13_distinctive_marks" placeholder="Any marks, moles, or features that make you you..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">14</span>What is the most recognizable thing about your face or look that people notice first?</label>
+        <input type="text" name="q14_signature_feature" placeholder="The thing people comment on first...">
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 3 ═══════════════════ -->
+    <div class="form-section" data-section="2">
+      <div class="section-header">
+        <div class="section-tag">Section 3 of 8 — Wardrobe</div>
+        <h2 class="section-title">What You Wear On Camera</h2>
+        <p class="section-desc">The fit you show up in every day. Every piece of your look matters — your avatar will wear this consistently across all content.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label><span class="q-num">15</span>Describe your go-to filming outfit:
+          <span class="hint">What do you wear in your best-performing videos? Be specific — brand, cut, color, fit. Example: "Black Nike fitted tee, dark jeans, fresh white kicks — clean but casual"</span>
+        </label>
+        <textarea name="q15_outfit" placeholder="Your exact filming fit in detail..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">16</span>What clothing brands or styles represent your look?</label>
+        <input type="text" name="q16_brands" placeholder="e.g. Nike, Jordan, streetwear, oversized fits">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">17</span>What colors show up most in your content?</label>
+        <input type="text" name="q17_colors" placeholder="e.g. Black, white, earth tones">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">18</span>What jewelry or accessories are always on you?
+          <span class="hint">Chain? Rings? Watch? Earrings? Describe them — they'll appear in every shot.</span>
+        </label>
+        <input type="text" name="q18_jewelry" placeholder="Every piece you never film without...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">19</span>What do you NEVER wear on camera?</label>
+        <input type="text" name="q19_never_wear" placeholder="Hard no list...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">20</span>Do you ever wear branded gear, hats, or anything with logos on camera?</label>
+        <input type="text" name="q20_branded_gear" placeholder="e.g. Only Jordan — no other logos / Always a fitted hat">
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 4 ═══════════════════ -->
+    <div class="form-section" data-section="3">
+      <div class="section-header">
+        <div class="section-tag">Section 4 of 8 — Environment</div>
+        <h2 class="section-title">Your Content Space</h2>
+        <p class="section-desc">Where you film is part of your brand. The AI will generate matching environments — your answers make sure they feel like your world.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label><span class="q-num">21</span>Where do you film most of your content?
+          <span class="hint">Bedroom? Living room? Outside? Describe the space.</span>
+        </label>
+        <textarea name="q21_filming_location" placeholder="Where your best content gets made..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">22</span>What's typically in your background when you film?</label>
+        <textarea name="q22_background" placeholder="What viewers see behind you..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">23</span>What's the vibe of your filming setup?
+          <span class="hint">Clean and minimal? Urban and raw? Bright and lifestyle-forward? Dark and aesthetic?</span>
+        </label>
+        <input type="text" name="q23_vibe" placeholder="The overall feel of your space...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">24</span>What type of products do you primarily feature on TikTok Shop?
+          <span class="hint">Tech? Fashion? Fitness? Home? Beauty? All of the above?</span>
+        </label>
+        <input type="text" name="q24_product_categories" placeholder="Your main product categories...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">25</span>Describe your typical product shot:
+          <span class="hint">How do you usually hold or show a product? In your hand toward camera? Unboxing? Wearing it?</span>
+        </label>
+        <textarea name="q25_product_shot" placeholder="How products appear in your content..."></textarea>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 5 ═══════════════════ -->
+    <div class="form-section" data-section="4">
+      <div class="section-header">
+        <div class="section-tag">Section 5 of 8 — Expression</div>
+        <h2 class="section-title">Your Energy. Your Movement.</h2>
+        <p class="section-desc">These questions help the AI animate your authentic on-camera energy. How you move and react is your signature — we're locking it in.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label><span class="q-num">26</span>Describe your "hype face" — the expression you make when you're genuinely excited about a product:</label>
+        <textarea name="q26_hype_face" placeholder="What your face does when something is actually fire..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">27</span>What's your "I'm being real with you" face — when you're talking straight to your audience?</label>
+        <textarea name="q27_real_face" placeholder="Your no-BS expression..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">28</span>What does your laugh look like on camera?
+          <span class="hint">Big and open? Quick and real? Smirk? Silent shake?</span>
+        </label>
+        <input type="text" name="q28_laugh" placeholder="How your laugh shows up on screen...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">29</span>Do you gesture with your hands a lot? Describe how:
+          <span class="hint">Pointing? Open palms? Holding the product? Counting on fingers? Waving it off?</span>
+        </label>
+        <input type="text" name="q29_gestures" placeholder="What your hands do when you're talking...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">30</span>When you're about to say something important, what does your body do to signal it?
+          <span class="hint">Lean forward? Head tilt? Pause and look directly at camera? Hand comes up?</span>
+        </label>
+        <textarea name="q30_emphasis_signal" placeholder="The physical tell before your key moment..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">31</span>What's your natural resting expression when you're not performing?</label>
+        <input type="text" name="q31_resting_expression" placeholder="Your default face when the camera's just... on...">
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 6 ═══════════════════ -->
+    <div class="form-section" data-section="5">
+      <div class="section-header">
+        <div class="section-tag">Section 6 of 8 — Content Strategy</div>
+        <h2 class="section-title">What Makes Your Content Hit?</h2>
+        <p class="section-desc">The formula behind your best-performing videos. What separates your content from every other creator on the platform.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label><span class="q-num">32</span>What's the product category you have the most credibility in with your audience?</label>
+        <input type="text" name="q32_top_category" placeholder="Where your audience trusts you most...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">33</span>What's the hook format that performs best for you?
+          <span class="hint">Starting with a bold claim? Opening with a problem? Starting mid-action?</span>
+        </label>
+        <textarea name="q33_best_hook" placeholder="Your highest-converting hook format..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">34</span>What makes your TikTok content different from every other TikTok Shop creator?</label>
+        <textarea name="q34_differentiator" placeholder="Your actual edge — what no one else does the way you do it..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">35</span>What vibe do you NEVER want to give off?</label>
+        <input type="text" name="q35_never_vibe" placeholder="The energy that would kill your brand...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">36</span>Who is your target viewer? Describe them like a specific person:
+          <span class="hint">Age range, what they shop for, what makes them stop scrolling.</span>
+        </label>
+        <textarea name="q36_target_viewer" placeholder="Paint a picture of exactly who you're talking to..."></textarea>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 7 ═══════════════════ -->
+    <div class="form-section" data-section="6">
+      <div class="section-header">
+        <div class="section-tag">Section 7 of 8 — Business Goals</div>
+        <h2 class="section-title">The Big Picture</h2>
+        <p class="section-desc">Where you're headed and what this AI system needs to deliver for your business.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label><span class="q-num">37</span>How are you currently monetizing — commission per sale, flat rate per video, or both?</label>
+        <input type="text" name="q37_monetization" placeholder="How deals are structured right now...">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">38</span>What's your target number of videos per week once the AI avatar system is running?</label>
+        <input type="text" name="q38_video_target" placeholder="e.g. 5–7 videos per week">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">39</span>What's the end game — are you building your own brand, or staying a marketplace creator?</label>
+        <textarea name="q39_end_game" placeholder="Where this is all going for you..."></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">40</span>What's one type of content you've always wanted to make but haven't figured out how to yet?</label>
+        <textarea name="q40_dream_content" placeholder="The format or idea you've been sitting on..."></textarea>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECTION 8 ═══════════════════ -->
+    <div class="form-section" data-section="7">
+      <div class="section-header">
+        <div class="section-tag">Section 8 of 8 — Content + Photos</div>
+        <h2 class="section-title">Series &amp; Photo Guide</h2>
+        <p class="section-desc">Last section. Pick your content series, then review the photo guide before your shoot.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label>Which content series fits your audience best? <span class="hint">Select all that apply.</span></label>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_you_need_this" value="You Need This">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"You Need This"</strong> — pure product hype, direct sell, fast cut</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_before_you_buy" value="Before You Buy">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"Before You Buy"</strong> — positioning yourself as the trusted advisor before a purchase decision</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_honestly_though" value="Honestly Though">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"Honestly Though"</strong> — raw, unfiltered product reviews (the anti-ad ad)</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_watch_me_order" value="Watch Me Order This">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"Watch Me Order This"</strong> — live/candid unboxing energy</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_deal_right_now" value="The Deal Right Now">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"The Deal Right Now"</strong> — time-sensitive, urgency-based product drops</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_week_in_products" value="My Week in Products">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"My Week in Products"</strong> — lifestyle integration, multiple products in one video</span>
+          </label>
+        </div>
+      </div>
+      <div class="q-group">
+        <label>Any other content ideas you want to build?</label>
+        <textarea name="other_series_ideas" placeholder="Other formats not in the list above..."></textarea>
+      </div>
+      <div class="q-group">
+        <label>Which series excites you most and why?</label>
+        <textarea name="preferred_series_why" placeholder="The one you'd start with tomorrow if you could..."></textarea>
+      </div>
+
+      <!-- PHOTO GUIDE -->
+      <div class="photo-guide">
+        <h3>📸 Photo Submission Guide</h3>
+        <p>The minimum is <strong>1 clear photo</strong>. But more = better avatar. Target: <strong>15–20 photos</strong>. Send them to Xavier after you submit this form.</p>
+
+        <div class="photo-warning">
+          ⚠️ <strong>The Non-Negotiable:</strong> Your hairstyle must be identical in every single photo. Fresh cut is usually best. Inconsistent hair = inconsistent generations. Lock in one look.
+        </div>
+
+        <h4>Face Shots — aim for 10</h4>
+        <table class="photo-table">
+          <tr><th>#</th><th>Shot</th><th>Instructions</th></tr>
+          <tr><td>1</td><td>Neutral, straight at camera</td><td>Natural, not smiling or frowning — just you</td></tr>
+          <tr><td>2</td><td>Big real smile / hype expression</td><td>The face you make when a product is actually fire</td></tr>
+          <tr><td>3</td><td>Serious / direct</td><td>The "I'm about to tell you something real" look</td></tr>
+          <tr><td>4</td><td>Mid-laugh</td><td>Natural laugh caught on camera</td></tr>
+          <tr><td>5</td><td>Talking / mid-sentence</td><td>Have someone snap you naturally speaking</td></tr>
+          <tr><td>6</td><td>Eyebrow raised / skeptical</td><td>The "okay but wait" face</td></tr>
+          <tr><td>7</td><td>Looking left</td><td>Eyes shift, head stays forward</td></tr>
+          <tr><td>8</td><td>Looking right</td><td>Eyes shift, head stays forward</td></tr>
+          <tr><td>9</td><td>Left side profile</td><td>Head turned fully left</td></tr>
+          <tr><td>10</td><td>Right side profile</td><td>Head turned fully right</td></tr>
+        </table>
+
+        <h4>Full Body Shots — aim for 5</h4>
+        <table class="photo-table">
+          <tr><th>#</th><th>Shot</th><th>Instructions</th></tr>
+          <tr><td>11</td><td>Standing, facing camera</td><td>Arms relaxed, natural stance</td></tr>
+          <tr><td>12</td><td>Standing, turned left</td><td>Full left side visible</td></tr>
+          <tr><td>13</td><td>Standing, turned right</td><td>Full right side visible</td></tr>
+          <tr><td>14</td><td>Standing, facing away</td><td>Back view</td></tr>
+          <tr><td>15</td><td>In your filming outfit</td><td>Dressed exactly how you'd appear on TikTok</td></tr>
+        </table>
+
+        <h4>Product / Action Shots — aim for 3–5</h4>
+        <table class="photo-table">
+          <tr><th>#</th><th>Shot</th><th>Instructions</th></tr>
+          <tr><td>16</td><td>Holding a product toward camera</td><td>Any product — tests your natural product-hold posture</td></tr>
+          <tr><td>17</td><td>In your filming spot</td><td>Where you actually shoot your content</td></tr>
+          <tr><td>18–20</td><td>Candid / natural</td><td>Real photos — not posed, not performed</td></tr>
+        </table>
+
+        <h4>Quality Tips</h4>
+        <ul class="photo-tips">
+          <li>Natural window light or outdoor shade is ideal. Avoid harsh overhead lighting.</li>
+          <li>Simple, clean backgrounds work best — the AI generates the environments.</li>
+          <li>No filters. Raw, unedited photos only.</li>
+          <li>iPhone or Android rear camera in good natural light works great.</li>
+          <li>Multiple sessions are fine — but only if the hairstyle is IDENTICAL each time.</li>
+        </ul>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="submit" class="btn btn-submit" id="submitBtn">Submit →</button>
+      </div>
+      <div class="submit-error" id="submitError">
+        Submission failed. Email your responses directly to <strong>xavier.johnson.pharmd@gmail.com</strong> — we'll get you set up.
+      </div>
+    </div>
+  </form>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon">✓</div>
+    <h2>You're In.</h2>
+    <p>Intake received. Xavier Johnson has your form — expect to hear back soon with your next steps. Time to build your AI avatar.</p>
+  </div>
+</main>
+
+<script>
+  const FORMSPREE_ID = 'xaqvlopb'; // Marvin Conley — TikTok Shop Creator
+  const STORAGE_KEY = 'marvin_intake_v1';
+
+  const sections = document.querySelectorAll('.form-section');
+  const progressFill = document.getElementById('progressFill');
+  const progressPct = document.getElementById('progressPct');
+  const stepStrip = document.getElementById('stepStrip');
+  const total = sections.length;
+  let current = 0;
+  let submitting = false;
+
+  // ── FIX 1: Block Enter key from triggering form submission ──
+  document.getElementById('intakeForm').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+      e.preventDefault();
+    }
+  });
+
+  // ── FIX 2: Auto-save to sessionStorage on every input change ──
+  function saveProgress() {
+    const data = {};
+    document.querySelectorAll('#intakeForm input[name], #intakeForm textarea[name]').forEach(el => {
+      if (el.type === 'checkbox') {
+        data[el.name] = el.checked;
+      } else {
+        data[el.name] = el.value;
+      }
+    });
+    data['__section'] = current;
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+  }
+
+  function restoreProgress() {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      document.querySelectorAll('#intakeForm input[name], #intakeForm textarea[name]').forEach(function (el) {
+        if (el.name in data) {
+          if (el.type === 'checkbox') { el.checked = data[el.name]; }
+          else { el.value = data[el.name]; }
+        }
+      });
+      if (typeof data['__section'] === 'number' && data['__section'] > 0) {
+        current = data['__section'];
+        // Update DOM directly — avoids calling updateProgress() a second time
+        sections.forEach(function (s, i) { s.classList.toggle('active', i === current); });
+        updateProgress();
+      }
+    } catch (e) {}
+  }
+
+  document.querySelectorAll('#intakeForm input, #intakeForm textarea').forEach(el => {
+    el.addEventListener('input', saveProgress);
+    el.addEventListener('change', saveProgress);
+  });
+
+  // ── NAVIGATION ──
+  function buildStrip() {
+    stepStrip.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const pill = document.createElement('div');
+      pill.className = 'step-pill' + (i === current ? ' active' : i < current ? ' done' : '');
+      stepStrip.appendChild(pill);
+    }
+    const count = document.createElement('span');
+    count.className = 'step-count';
+    count.textContent = `${current + 1}/${total}`;
+    stepStrip.appendChild(count);
+  }
+
+  function updateProgress() {
+    const pct = Math.round(((current + 1) / total) * 100);
+    progressFill.style.width = pct + '%';
+    progressPct.textContent = pct + '%';
+    buildStrip();
+  }
+
+  function showSection(idx) {
+    sections.forEach((s, i) => s.classList.toggle('active', i === idx));
+    // iOS Safari-safe scroll to top
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch(e) {
+      window.scrollTo(0, 0);
+    }
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    updateProgress();
+  }
+
+  function goNext() {
+    if (current < total - 1) { saveProgress(); current++; showSection(current); }
+  }
+  function goPrev() {
+    if (current > 0) { saveProgress(); current--; showSection(current); }
+  }
+
+  // iOS keyboard — autocapitalize on all inputs and textareas
+  document.querySelectorAll('#intakeForm textarea').forEach(function (el) {
+    el.setAttribute('autocapitalize', 'sentences');
+  });
+  document.querySelectorAll('#intakeForm input[type="text"]').forEach(function (el) {
+    el.setAttribute('autocapitalize', 'sentences');
+  });
+  // Creator handle is a username — no autocap, no autocorrect
+  var handleInput = document.querySelector('input[name="q1_creator_name"]');
+  if (handleInput) { handleInput.setAttribute('autocapitalize', 'none'); handleInput.setAttribute('autocorrect', 'off'); handleInput.setAttribute('spellcheck', 'false'); }
+  // Persona title and energy words are proper labels — capitalize words
+  ['q2_persona_title', 'q5_energy_words', 'q16_brands', 'q17_colors', 'q18_jewelry'].forEach(function (n) {
+    var el = document.querySelector('input[name="' + n + '"]');
+    if (el) el.setAttribute('autocapitalize', 'words');
+  });
+
+  // Init — render progress first, then restore (updateProgress called exactly once)
+  updateProgress();
+  restoreProgress(); // only calls updateProgress() again if a saved section > 0 is found
+
+  // ── FORM SUBMISSION ──
+  document.getElementById('intakeForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Safety: only submit from final section, never double-submit
+    if (current !== total - 1) return;
+    if (submitting) return;
+    submitting = true;
+
+    const btn = document.getElementById('submitBtn');
+    const errEl = document.getElementById('submitError');
+    btn.classList.add('loading');
+    btn.textContent = 'Sending...';
+    errEl.style.display = 'none';
+
+    const formData = new FormData(this);
+
+    const checked = [];
+    document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => checked.push(cb.value));
+    formData.set('content_series_selected', checked.join(', ') || 'None selected');
+
+    try {
+      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: formData
+      });
+      if (res.ok) {
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch(e) {}
+        document.getElementById('intakeForm').style.display = 'none';
+        stepStrip.style.display = 'none';
+        document.getElementById('successScreen').classList.add('active');
+        progressFill.style.width = '100%';
+        progressPct.textContent = '100%';
+      } else {
+        throw new Error('Server error');
+      }
+    } catch (err) {
+      submitting = false;
+      btn.classList.remove('loading');
+      btn.textContent = 'Submit →';
+      errEl.style.display = 'block';
+    }
+  });
+</script>
+</body>
+</html>

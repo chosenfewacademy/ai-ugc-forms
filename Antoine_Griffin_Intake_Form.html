@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>Antoine Griffin — AI Avatar Intake | Universal Wealth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1629;
+    --gold: #C8A96E;
+    --gold-light: #dfc28e;
+    --cream: #F4F0E8;
+    --cream-dim: rgba(244,240,232,0.06);
+    --text: #e8e4dc;
+    --text-muted: rgba(244,240,232,0.5);
+    --border: rgba(200,169,110,0.25);
+    --input-bg: rgba(255,255,255,0.04);
+    --input-focus: rgba(200,169,110,0.08);
+    --radius: 4px;
+    --transition: 0.26s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--navy);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+    /* Keep content above iPhone home indicator */
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-rail {
+    position: fixed;
+    top: env(safe-area-inset-top, 0);
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(200,169,110,0.15);
+    z-index: 100;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transition: width 0.45s cubic-bezier(0.4,0,0.2,1);
+    width: 0%;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 56px 24px 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: 'UW';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 180px;
+    font-weight: 900;
+    color: rgba(200,169,110,0.04);
+    letter-spacing: -8px;
+    pointer-events: none;
+    user-select: none;
+  }
+  .brand-rule {
+    width: 48px;
+    height: 1px;
+    background: var(--gold);
+    margin: 0 auto 24px;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--cream);
+    margin-bottom: 10px;
+  }
+  header p {
+    color: var(--text-muted);
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── STEP INDICATOR ── */
+  .step-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 28px 24px;
+    flex-wrap: wrap;
+  }
+  .step-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: var(--transition);
+  }
+  .step-dot.active { background: var(--gold); transform: scale(1.4); }
+  .step-dot.done   { background: rgba(200,169,110,0.4); }
+  .step-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-left: 8px;
+  }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── SECTIONS ── */
+  .form-section {
+    display: none;
+    animation: fadeUp 0.35s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  .form-section.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    padding: 40px 0 32px;
+    position: relative;
+  }
+  .section-number {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 120px;
+    font-weight: 900;
+    color: rgba(200,169,110,0.06);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+  .section-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 700;
+    color: var(--cream);
+    line-height: 1.2;
+    margin-bottom: 10px;
+  }
+  .section-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 8px 0 32px;
+  }
+
+  /* ── QUESTIONS ── */
+  .q-group { margin-bottom: 28px; }
+
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--cream);
+    margin-bottom: 8px;
+  }
+  label span.q-num {
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 400;
+    margin-right: 6px;
+  }
+  label .hint {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  input[type="text"],
+  textarea {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    /* 16px is the iOS minimum to prevent auto-zoom on focus */
+    font-size: 16px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color var(--transition), background var(--transition);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="text"]:focus,
+  textarea:focus {
+    border-color: var(--gold);
+    background: var(--input-focus);
+    box-shadow: 0 0 0 3px rgba(200,169,110,0.08);
+  }
+  textarea {
+    resize: none;
+    min-height: 96px;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(244,240,232,0.25);
+  }
+
+  /* ── CHECKBOXES ── */
+  .checkbox-group { display: flex; flex-direction: column; gap: 12px; }
+  .checkbox-item  { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+  .checkbox-item input[type="checkbox"] { display: none; }
+  .checkbox-item .box {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    background: var(--input-bg);
+  }
+  .checkbox-item input:checked + .box {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+  .checkbox-item input:checked + .box::after {
+    content: '';
+    width: 6px;
+    height: 10px;
+    border: 2px solid var(--navy);
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translateY(-1px);
+    display: block;
+  }
+  .checkbox-item .cb-label {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.55;
+    padding-top: 2px;
+  }
+
+  /* ── PHOTO GUIDE ── */
+  .photo-guide {
+    background: var(--cream-dim);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-top: 32px;
+  }
+  .photo-guide h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .photo-guide > p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .photo-warning {
+    background: rgba(200,169,110,0.08);
+    border-left: 3px solid var(--gold);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  .photo-guide h4 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 18px 0 8px;
+  }
+  table.photo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.photo-table th {
+    text-align: left;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 6px 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  table.photo-table td {
+    padding: 9px 6px 9px 0;
+    border-bottom: 1px solid rgba(200,169,110,0.07);
+    vertical-align: top;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  table.photo-table td:first-child {
+    color: var(--gold);
+    font-weight: 600;
+    min-width: 26px;
+  }
+  /* list-style: none prevents double bullets alongside ::before content */
+  ul.photo-tips {
+    list-style: none;
+    margin-top: 12px;
+  }
+  ul.photo-tips li {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+  ul.photo-tips li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+  }
+
+  /* ── NAV BUTTONS ── */
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+  }
+  .btn {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0 28px;
+    /* 48px meets Apple's 44pt minimum tap target */
+    height: 48px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* Remove iOS tap flash + 300ms delay */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    white-space: nowrap;
+  }
+  .btn-prev {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-prev:active { border-color: var(--gold); color: var(--gold); }
+  .btn-next {
+    background: var(--gold);
+    color: var(--navy);
+    margin-left: auto;
+  }
+  .btn-next:active { background: var(--gold-light); }
+  .btn-submit {
+    background: var(--gold);
+    color: var(--navy);
+    margin-left: auto;
+    position: relative;
+    min-width: 160px;
+  }
+  .btn-submit:active { background: var(--gold-light); }
+  .btn-submit.loading {
+    pointer-events: none;
+    opacity: 0.7;
+    color: transparent;
+  }
+  .btn-submit.loading::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(11,22,41,0.4);
+    border-top-color: var(--navy);
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SUCCESS SCREEN ── */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 80px 24px;
+    animation: fadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+  }
+  .success-screen.active { display: block; }
+  .success-icon {
+    width: 64px;
+    height: 64px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 28px;
+  }
+  .success-icon::after {
+    content: '';
+    width: 14px;
+    height: 22px;
+    border: 3px solid var(--gold);
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translateY(-3px);
+    display: block;
+  }
+  .success-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--cream);
+    margin-bottom: 14px;
+  }
+  .success-screen p {
+    color: var(--text-muted);
+    font-size: 15px;
+    max-width: 460px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── ERROR ── */
+  .submit-error {
+    display: none;
+    background: rgba(224,112,112,0.1);
+    border: 1px solid rgba(224,112,112,0.3);
+    color: #e07070;
+    font-size: 13px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+
+  /* ── MOBILE / iPHONE ── */
+  @media (max-width: 540px) {
+    header { padding: 44px 20px 32px; }
+    main { padding: 0 20px 80px; }
+    .section-number { font-size: 72px; top: 0; right: 0; }
+    .section-header { padding-top: 24px; }
+    .q-group { margin-bottom: 22px; }
+    textarea { min-height: 108px; }
+
+    .nav-buttons {
+      flex-direction: column;
+      /* Sit above iPhone home bar */
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    }
+    .btn {
+      width: 100%;
+      height: 52px;
+      font-size: 15px;
+    }
+    .btn-next,
+    .btn-submit { margin-left: 0; }
+
+    /* Larger checkboxes for thumb accuracy */
+    .checkbox-item .box { width: 26px; height: 26px; min-width: 26px; }
+    .checkbox-item .cb-label { font-size: 15px; }
+
+    /* Photo table: hide instructions column on small screens */
+    table.photo-table th:last-child,
+    table.photo-table td:last-child { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-rail"><div class="progress-fill" id="progressFill"></div></div>
+
+<header>
+  <div class="brand-rule"></div>
+  <h1>Antoine Griffin</h1>
+  <p>AI Avatar Character Intake &nbsp;·&nbsp; Universal Wealth</p>
+</header>
+
+<div class="step-indicator" id="stepIndicator"></div>
+
+<main>
+  <form id="intakeForm" novalidate autocomplete="on">
+    <!-- Formspree special fields -->
+    <input type="hidden" name="_subject"     value="Antoine Griffin — AI Avatar Intake Submission">
+    <input type="hidden" name="_replyto"     value="xavier.johnson.pharmd@gmail.com">
+    <input type="hidden" name="client_name"  value="Antoine Griffin">
+    <input type="hidden" name="client_type"  value="Life Insurance — Universal Wealth">
+
+    <!-- ═══ SECTION 1 ═══ -->
+    <div class="form-section active" data-section="0">
+      <div class="section-header">
+        <div class="section-number">01</div>
+        <div class="section-tag">Section 1 of 7</div>
+        <h2 class="section-title">Identity &amp; Brand</h2>
+        <p class="section-desc">Your answers tell the AI exactly who you are — your presence, your authority, your brand. Answer like you're describing yourself to someone who's never met you.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label><span class="q-num">01</span>What is your full name as it should appear on your content?</label>
+        <input type="text" name="q01_full_name" placeholder="e.g. Antoine Griffin" autocapitalize="words" autocorrect="off">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">02</span>What is your official title at Universal Wealth?</label>
+        <input type="text" name="q02_title" placeholder="e.g. Licensed Life Insurance Advisor" autocapitalize="words">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">03</span>If you had a persona title — like "The Protector" or "Your Family's Advocate" — what would it be?
+          <span class="hint">This becomes the emotional anchor for your AI character.</span>
+        </label>
+        <input type="text" name="q03_persona_title" placeholder="e.g. The Family's Shield" autocapitalize="words">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">04</span>Write one sentence that captures your mission. This is your signature line.
+          <span class="hint">Example: "I help families build a safety net so life's worst moments don't become financial disasters."</span>
+        </label>
+        <textarea name="q04_mission" placeholder="Your mission in one sentence..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">05</span>What three words describe your energy on camera?</label>
+        <input type="text" name="q05_three_words" placeholder="e.g. Trustworthy, Calm, Direct" autocapitalize="words">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">06</span>What is one thing you want every viewer to FEEL after watching your content?</label>
+        <textarea name="q06_viewer_feeling" placeholder="The one emotion or realization..." autocapitalize="sentences"></textarea>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-next" onclick="goNext()">Next Section →</button>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 2 ═══ -->
+    <div class="form-section" data-section="1">
+      <div class="section-header">
+        <div class="section-number">02</div>
+        <div class="section-tag">Section 2 of 7</div>
+        <h2 class="section-title">Physical Appearance</h2>
+        <p class="section-desc">This section is critical. The AI must lock in your exact features and never change them. Be specific — your avatar's consistency depends on it.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label>
+          <span class="q-num">07</span>Height and build in your own words:
+          <span class="hint">Example: "6'1", broad shoulders, lean but not thin"</span>
+        </label>
+        <input type="text" name="q07_build" placeholder="Height and frame..." autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">08</span>How would you describe your skin tone?
+          <span class="hint">Be specific: deep brown, medium brown, light brown, olive, fair, etc.</span>
+        </label>
+        <input type="text" name="q08_skin_tone" placeholder="e.g. Deep brown, warm undertones" autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">09</span>Eye color:</label>
+        <input type="text" name="q09_eye_color" placeholder="e.g. Dark brown" autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">10</span>Hair — describe your texture, length, and how you typically wear it:
+          <span class="hint">⚠️ Your AI avatar locks to the hairstyle in your photos. All photos must show the SAME hairstyle.</span>
+        </label>
+        <textarea name="q10_hair" placeholder="e.g. Natural coils, cut low with a fade" autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">11</span>Facial hair — describe exactly what you have:
+          <span class="hint">Clean-shaven? Stubble? Beard? Describe the density and pattern.</span>
+        </label>
+        <textarea name="q11_facial_hair" placeholder="Describe your facial hair precisely..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">12</span>Do you wear glasses? If yes, describe them:
+          <span class="hint">Frame shape, color, thickness — e.g. black rectangular, thin wire</span>
+        </label>
+        <input type="text" name="q12_glasses" placeholder="e.g. No glasses / Black rectangular frames" autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">13</span>List any distinctive marks the AI must ALWAYS preserve:
+          <span class="hint">Moles, birthmarks, scars — anything uniquely yours.</span>
+        </label>
+        <textarea name="q13_distinctive_marks" placeholder="Any moles, scars, birthmarks..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">14</span>What is the most recognizable feature that makes you immediately "you"?</label>
+        <input type="text" name="q14_signature_feature" placeholder="The first thing people notice..." autocapitalize="sentences">
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next Section →</button>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 3 ═══ -->
+    <div class="form-section" data-section="2">
+      <div class="section-header">
+        <div class="section-number">03</div>
+        <div class="section-tag">Section 3 of 7</div>
+        <h2 class="section-title">Wardrobe &amp; Signature Look</h2>
+        <p class="section-desc">Your attire signals authority and trust. The AI needs your exact visual signature — down to fabric and accessories.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label>
+          <span class="q-num">15</span>Describe your go-to outfit for professional content:
+          <span class="hint">What do you wear in your best-performing videos? Be specific — cut, color, fabric. Example: "Navy button-down, sleeves sometimes rolled, no tie — clean but not stiff"</span>
+        </label>
+        <textarea name="q15_outfit" placeholder="Describe your signature look in detail..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">16</span>What colors do you wear most in professional settings?</label>
+        <input type="text" name="q16_colors" placeholder="e.g. Navy, charcoal, white, black" autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">17</span>Do you wear a watch? Describe it:
+          <span class="hint">Brand, style, strap material, color — this appears in every shot.</span>
+        </label>
+        <input type="text" name="q17_watch" placeholder="e.g. Silver Seiko, metal bracelet / No watch" autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">18</span>Any other accessories always on you?
+          <span class="hint">Rings, necklace, bracelet, lapel pin, pocket square, etc.</span>
+        </label>
+        <input type="text" name="q18_accessories" placeholder="e.g. Gold wedding band, no other jewelry" autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">19</span>Would you ever remove your jacket or roll your sleeves on camera? When?</label>
+        <textarea name="q19_jacket_rules" placeholder="When you loosen the look, and when you don't..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">20</span>What do you NEVER wear on camera?</label>
+        <input type="text" name="q20_never_wear" placeholder="Anything that's off-brand for you..." autocapitalize="sentences">
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next Section →</button>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 4 ═══ -->
+    <div class="form-section" data-section="3">
+      <div class="section-header">
+        <div class="section-number">04</div>
+        <div class="section-tag">Section 4 of 7</div>
+        <h2 class="section-title">Content Environment</h2>
+        <p class="section-desc">Your background communicates status and credibility before you say a word. Describe your ideal scene.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label>
+          <span class="q-num">21</span>Describe your ideal filming background:
+          <span class="hint">Home office with bookshelves? Professional office? Clean neutral wall? Be specific about what's in frame.</span>
+        </label>
+        <textarea name="q21_background" placeholder="What the camera sees behind you..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">22</span>What items should always be visible in your background or on your desk?
+          <span class="hint">Laptop? Notepad? Universal Wealth materials? Family photo? Awards?</span>
+        </label>
+        <textarea name="q22_desk_items" placeholder="Props and items that signal who you are..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">23</span>What lighting feels most like "you"?
+          <span class="hint">Warm natural window light? Soft studio light? Bright and clean? Moody?</span>
+        </label>
+        <input type="text" name="q23_lighting" placeholder="Describe the feel and mood of your ideal light..." autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">24</span>What does your filming environment say about you to a first-time viewer?</label>
+        <textarea name="q24_environment_message" placeholder="The impression your space makes on someone seeing it for the first time..." autocapitalize="sentences"></textarea>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next Section →</button>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 5 ═══ -->
+    <div class="form-section" data-section="4">
+      <div class="section-header">
+        <div class="section-number">05</div>
+        <div class="section-tag">Section 5 of 7</div>
+        <h2 class="section-title">Expression &amp; Body Language</h2>
+        <p class="section-desc">These questions help the AI animate you with your authentic physical presence — how you move, gesture, and hold yourself on screen.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label>
+          <span class="q-num">25</span>When you're making a serious point you really believe in, what does your face do?
+          <span class="hint">Eyes narrow? Chin lowers? Brow furrows? Jaw tightens?</span>
+        </label>
+        <textarea name="q25_serious_face" placeholder="Describe your conviction expression..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">26</span>Describe your natural smile — reserved, warm, or full and open?</label>
+        <input type="text" name="q26_smile" placeholder="e.g. Controlled and warm — rarely full teeth, but genuine" autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">27</span>When you're being empathetic — really connecting with someone's problem — what does your expression look like?</label>
+        <textarea name="q27_empathy_face" placeholder="How you look when you're truly listening..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">28</span>What do your hands typically do when you're making an important point?
+          <span class="hint">Clasped? One finger raised? Open palms? Gesturing outward?</span>
+        </label>
+        <input type="text" name="q28_hand_gestures" placeholder="Your natural hand behavior during key moments..." autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">29</span>What's your posture at your most confident and natural?
+          <span class="hint">Leaning forward? Upright? Elbows on desk?</span>
+        </label>
+        <input type="text" name="q29_posture" placeholder="e.g. Upright, leaning slightly forward, elbows on the desk" autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">30</span>What's your resting expression when you're just listening?</label>
+        <input type="text" name="q30_resting_expression" placeholder="Your default face when you're not performing..." autocapitalize="sentences">
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next Section →</button>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 6 ═══ -->
+    <div class="form-section" data-section="5">
+      <div class="section-header">
+        <div class="section-number">06</div>
+        <div class="section-tag">Section 6 of 7</div>
+        <h2 class="section-title">Message, Audience &amp; Brand Assets</h2>
+        <p class="section-desc">Who you're speaking to, what you want them to feel, and the tools that make your brand recognizable.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label>
+          <span class="q-num">31</span>What props make your content feel authentic and on-brand?
+          <span class="hint">Leather portfolio, branded notepad, Universal Wealth folder, pen, coffee cup?</span>
+        </label>
+        <input type="text" name="q31_props" placeholder="Items that make your setup feel real and professional..." autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">32</span>Do you have a Universal Wealth logo, brand colors guide, or branded materials?
+          <span class="hint">These will be used in your video end frames and background details.</span>
+        </label>
+        <textarea name="q32_brand_assets" placeholder="Describe or list any brand materials you can share..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">33</span>What is your primary call-to-action?
+          <span class="hint">Example: "Visit UniversalWealth.com" / "DM me the word PROTECT" / "Call this number"</span>
+        </label>
+        <input type="text" name="q33_cta" placeholder="The action you want every viewer to take..." autocapitalize="sentences">
+      </div>
+      <div class="q-group">
+        <label>
+          <span class="q-num">34</span>Who is your ideal viewer? Describe them like a specific person:
+          <span class="hint">Age range, family situation, what they're worried about, what they're hoping for.</span>
+        </label>
+        <textarea name="q34_ideal_viewer" placeholder="Paint a picture of the exact person you're speaking to..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">35</span>What is the single biggest misconception about life insurance you want to break?</label>
+        <textarea name="q35_misconception" placeholder="The myth you want to destroy..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">36</span>What does someone who almost didn't buy life insurance — but did — tell you later?</label>
+        <textarea name="q36_client_outcome" placeholder="The most powerful thing your clients say after the fact..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label><span class="q-num">37</span>What would you NEVER say on camera?</label>
+        <textarea name="q37_never_say" placeholder="Anything that's off-tone, off-brand, or off-limits..." autocapitalize="sentences"></textarea>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="button" class="btn btn-next" onclick="goNext()">Next Section →</button>
+      </div>
+    </div>
+
+    <!-- ═══ SECTION 7 ═══ -->
+    <div class="form-section" data-section="6">
+      <div class="section-header">
+        <div class="section-number">07</div>
+        <div class="section-tag">Section 7 of 7</div>
+        <h2 class="section-title">Content Direction &amp; Photos</h2>
+        <p class="section-desc">Final section. Choose the content formats that resonate most, then review the photo guide before your shoot.</p>
+      </div>
+      <div class="divider"></div>
+
+      <div class="q-group">
+        <label>Which content series fits your audience best? <span class="hint">Tap all that apply.</span></label>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_hard_conversation" value="The Hard Conversation">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"The Hard Conversation"</strong> — opening with the uncomfortable truth about unprotected families</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_myth_reality" value="Myth vs. Reality">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"Myth vs. Reality"</strong> — busting common life insurance myths</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_quick_win" value="The Quick Win">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"The Quick Win"</strong> — showing how fast and easy it is to get covered</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_for_family" value="For The Family">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"For The Family"</strong> — lifestyle content showing what protection enables</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" name="series_client_story" value="Client Story">
+            <div class="box"></div>
+            <span class="cb-label"><strong>"Client Story"</strong> — AI-generated narrative of a real (anonymized) outcome</span>
+          </label>
+        </div>
+      </div>
+      <div class="q-group">
+        <label>Any other content ideas you want to explore?</label>
+        <textarea name="other_content_ideas" placeholder="Other formats or ideas not listed above..." autocapitalize="sentences"></textarea>
+      </div>
+      <div class="q-group">
+        <label>Which series excites you most and why?</label>
+        <textarea name="preferred_series_why" placeholder="The one that feels most natural and powerful for your brand..." autocapitalize="sentences"></textarea>
+      </div>
+
+      <!-- PHOTO GUIDE -->
+      <div class="photo-guide">
+        <h3>📸 Photo Submission Guide</h3>
+        <p>Minimum is <strong>1 clear, high-quality photo</strong>. But the more you send, the better your avatar matches you. Target: <strong>15–20 photos</strong>.</p>
+
+        <div class="photo-warning">
+          ⚠️ <strong>The Non-Negotiable:</strong> Your hairstyle must be identical in every photo. Inconsistent hair = inconsistent avatar. Pick one look and stick with it.
+        </div>
+
+        <h4>Face Shots — aim for 10</h4>
+        <table class="photo-table">
+          <tr><th>#</th><th>Shot</th><th>Instructions</th></tr>
+          <tr><td>1</td><td>Neutral, straight at camera</td><td>Relaxed face, natural light</td></tr>
+          <tr><td>2</td><td>Genuine warm smile</td><td>Real smile, eyes engaged</td></tr>
+          <tr><td>3</td><td>Serious / authoritative</td><td>Chin slightly lowered, direct eye contact</td></tr>
+          <tr><td>4</td><td>Empathetic expression</td><td>The face you make when listening to a client's concern</td></tr>
+          <tr><td>5</td><td>Mid-sentence / talking</td><td>Catch yourself naturally speaking</td></tr>
+          <tr><td>6</td><td>Looking slightly left</td><td>Head stays forward, eyes shift left</td></tr>
+          <tr><td>7</td><td>Looking slightly right</td><td>Head stays forward, eyes shift right</td></tr>
+          <tr><td>8</td><td>Looking slightly down</td><td>Thoughtful, chin dropped slightly</td></tr>
+          <tr><td>9</td><td>Left side profile</td><td>Turn head fully left</td></tr>
+          <tr><td>10</td><td>Right side profile</td><td>Turn head fully right</td></tr>
+        </table>
+
+        <h4>Full Body Shots — aim for 5</h4>
+        <table class="photo-table">
+          <tr><th>#</th><th>Shot</th><th>Instructions</th></tr>
+          <tr><td>11</td><td>Standing, facing camera</td><td>Arms relaxed, natural posture</td></tr>
+          <tr><td>12</td><td>Standing, turned left</td><td>Full left side visible</td></tr>
+          <tr><td>13</td><td>Standing, turned right</td><td>Full right side visible</td></tr>
+          <tr><td>14</td><td>Standing, facing away</td><td>Back view</td></tr>
+          <tr><td>15</td><td>In your content outfit</td><td>Dressed exactly as you'd appear on camera</td></tr>
+        </table>
+
+        <h4>Environment / Candid — aim for 3–5</h4>
+        <table class="photo-table">
+          <tr><th>#</th><th>Shot</th><th>Instructions</th></tr>
+          <tr><td>16</td><td>In your filming spot</td><td>Seated where you'd normally record</td></tr>
+          <tr><td>17</td><td>At your desk, natural</td><td>Laptop open, not posed</td></tr>
+          <tr><td>18–20</td><td>Candid / natural</td><td>Photos you'd send a friend — not performed</td></tr>
+        </table>
+
+        <h4>Quality Tips</h4>
+        <ul class="photo-tips">
+          <li>Natural window light is perfect. Avoid harsh overhead fluorescent.</li>
+          <li>Plain walls or simple backgrounds work best — AI generates the environments.</li>
+          <li>No filters. Raw, unedited photos only.</li>
+          <li>Phone camera is fine — iPhone rear camera in good light works great.</li>
+          <li>Multiple sessions are fine, but ONLY if the hairstyle is identical each time.</li>
+        </ul>
+      </div>
+
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-prev" onclick="goPrev()">← Back</button>
+        <button type="submit" class="btn btn-submit" id="submitBtn">Submit Form</button>
+      </div>
+      <div class="submit-error" id="submitError">
+        Submission failed. Please email your completed answers directly to <strong>xavier.johnson.pharmd@gmail.com</strong> and we'll get you set up from there.
+      </div>
+    </div>
+
+  </form>
+
+  <!-- SUCCESS SCREEN -->
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon"></div>
+    <h2>Form Received</h2>
+    <p>Thank you, Antoine. Your intake has been submitted to Xavier Johnson. You'll hear back shortly with next steps for your photo session and AI avatar build.</p>
+  </div>
+</main>
+
+<script>
+  const FORMSPREE_ID  = 'xwvywork';        // Antoine Griffin — Universal Wealth
+  const STORAGE_KEY   = 'antoine_intake_v1';
+
+  const form          = document.getElementById('intakeForm');
+  const sections      = document.querySelectorAll('.form-section');
+  const progressFill  = document.getElementById('progressFill');
+  const stepIndicator = document.getElementById('stepIndicator');
+  const total         = sections.length;
+  let   current       = 0;
+  let   submitting    = false;
+
+  /* ─────────────────────────────────────────────
+     1. BLOCK ENTER KEY on text inputs
+        Pressing Enter in any <input> fires the
+        form's submit event — from ANY section.
+        Blocked here so only the Submit button works.
+  ───────────────────────────────────────────── */
+  form.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+      e.preventDefault();
+    }
+  });
+
+  /* ─────────────────────────────────────────────
+     2. PERSIST to sessionStorage on every keystroke.
+        If Safari closes the tab or the phone screen
+        times out, all answers restore on re-open.
+  ───────────────────────────────────────────── */
+  function saveProgress () {
+    cons
