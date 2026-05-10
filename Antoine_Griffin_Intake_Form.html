@@ -1015,4 +1015,144 @@
         times out, all answers restore on re-open.
   ───────────────────────────────────────────── */
   function saveProgress () {
-    cons
+    const data = { __section: current };
+    form.querySelectorAll('input[name], textarea[name]').forEach(function (el) {
+      data[el.name] = el.type === 'checkbox' ? el.checked : el.value;
+    });
+    try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (_) {}
+  }
+
+  function restoreProgress () {
+    var raw;
+    try { raw = sessionStorage.getItem(STORAGE_KEY); } catch (_) { return; }
+    if (!raw) return;
+    var data;
+    try { data = JSON.parse(raw); } catch (_) { return; }
+
+    form.querySelectorAll('input[name], textarea[name]').forEach(function (el) {
+      if (el.name in data) {
+        if (el.type === 'checkbox') { el.checked = data[el.name]; }
+        else { el.value = data[el.name]; }
+      }
+    });
+
+    var saved = typeof data.__section === 'number' ? data.__section : 0;
+    if (saved > 0 && saved < total) {
+      current = saved;
+      // update UI without re-running restoreProgress
+      sections.forEach(function (s, i) { s.classList.toggle('active', i === current); });
+      renderProgress();
+    }
+  }
+
+  form.querySelectorAll('input, textarea').forEach(function (el) {
+    el.addEventListener('input',  saveProgress);
+    el.addEventListener('change', saveProgress);
+  });
+
+  /* ─────────────────────────────────────────────
+     3. PROGRESS BAR & STEP DOTS
+  ───────────────────────────────────────────── */
+  function renderProgress () {
+    progressFill.style.width = (((current + 1) / total) * 100) + '%';
+    stepIndicator.innerHTML  = '';
+    for (var i = 0; i < total; i++) {
+      var dot = document.createElement('div');
+      dot.className = 'step-dot' +
+        (i === current ? ' active' : i < current ? ' done' : '');
+      stepIndicator.appendChild(dot);
+    }
+    var lbl = document.createElement('span');
+    lbl.className   = 'step-label';
+    lbl.textContent = (current + 1) + ' / ' + total;
+    stepIndicator.appendChild(lbl);
+  }
+
+  /* ─────────────────────────────────────────────
+     4. SECTION NAVIGATION
+  ───────────────────────────────────────────── */
+  function showSection (idx) {
+    sections.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+    // iOS Safari-safe scroll — belt & braces approach
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) {}
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop            = 0;
+    renderProgress();
+  }
+
+  function goNext () {
+    if (current < total - 1) {
+      saveProgress();
+      current++;
+      showSection(current);
+    }
+  }
+
+  function goPrev () {
+    if (current > 0) {
+      saveProgress();
+      current--;
+      showSection(current);
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+     5. INIT — render first, then restore saved state
+  ───────────────────────────────────────────── */
+  renderProgress();
+  restoreProgress();
+
+  /* ─────────────────────────────────────────────
+     6. FORM SUBMISSION
+  ───────────────────────────────────────────── */
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    // Guard: only submit from the final section
+    if (current !== total - 1) return;
+    // Guard: prevent double-tap submission
+    if (submitting) return;
+    submitting = true;
+
+    var btn   = document.getElementById('submitBtn');
+    var errEl = document.getElementById('submitError');
+    btn.classList.add('loading');
+    errEl.style.display = 'none';
+
+    // Build FormData from the whole form (all sections, including hidden ones)
+    var formData = new FormData(form);
+
+    // Collect checked content series into one readable field
+    var checked = [];
+    form.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) {
+      checked.push(cb.value);
+    });
+    formData.set('content_series_selected', checked.length ? checked.join(', ') : 'None selected');
+
+    try {
+      var res = await fetch('https://formspree.io/f/' + FORMSPREE_ID, {
+        method:  'POST',
+        headers: { 'Accept': 'application/json' },
+        body:    formData
+      });
+
+      if (res.ok) {
+        // Wipe saved draft — submission succeeded
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
+
+        form.style.display                                     = 'none';
+        stepIndicator.style.display                            = 'none';
+        document.getElementById('successScreen').classList.add('active');
+        progressFill.style.width                               = '100%';
+      } else {
+        throw new Error('non-ok response: ' + res.status);
+      }
+    } catch (err) {
+      submitting            = false;
+      btn.classList.remove('loading');
+      errEl.style.display   = 'block';
+    }
+  });
+</script>
+</body>
+</html>
